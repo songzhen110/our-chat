@@ -1,0 +1,8 @@
+
+M	java:S106-"9Replace this use of System.out or System.err by a logger.(ö’Ä|
+\
+java:S11267"AReplace this if-then-else statement by a single return statement.(ëÃ¡ÿÿÿÿÿ
+U
+java:S4719B":Replace Charset.forName() call with StandardCharsets.UTF_8(†ûõéùÿÿÿÿ
+E
+java:S1144="/Remove this unused private "getByteBuf" method.(åÃ‹
