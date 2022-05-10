@@ -1,4 +1,4 @@
-package com.howcool.client;
+package com.howcool.handler;
 
 import com.howcool.protocol.Packet;
 import com.howcool.protocol.PacketCodeC;
@@ -9,20 +9,29 @@ import com.howcool.util.LoginUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 public class FirstClientHandler extends ChannelInboundHandlerAdapter {
+
+    /***
+     * 在 handlerAdded channelRegistered 之后 触发
+     * @param ctx ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println(new Date() + ": 客户端开始登录");
+        log.info("客户端开始登录");
+
+        //ctx.channel().writeAndFlush(getByteBuf(ctx));
 
         // 创建登录对象
         LoginRequestPacket loginRequestPacket = new LoginRequestPacket();
         loginRequestPacket.setUserId(UUID.randomUUID().toString());
-        loginRequestPacket.setUsername("zhangsan");
+        loginRequestPacket.setUserName("张三");
         loginRequestPacket.setPassword("abc123");
 
         // 编码
@@ -33,8 +42,8 @@ public class FirstClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private ByteBuf getByteBuf(ChannelHandlerContext ctx) {
-        // 1. 获取二进制抽象 ByteBuf
-        ByteBuf buffer = ctx.alloc().buffer();
+        // 1. 获取 ByteBuf
+        ByteBuf buffer = ctx.alloc().directBuffer();
 
         // 2. 准备数据，指定字符串的字符集为 utf-8
         byte[] bytes = "你好，闪电侠!".getBytes(Charset.forName("utf-8"));
@@ -55,14 +64,14 @@ public class FirstClientHandler extends ChannelInboundHandlerAdapter {
             LoginResponsePacket loginResponsePacket = (LoginResponsePacket) packet;
 
             if (loginResponsePacket.isSuccess()) {
-                System.out.println(new Date() + ": 客户端登录成功");
+                log.info("客户端登录成功");
                 LoginUtil.markAsLogin(ctx.channel());
             } else {
-                System.out.println(new Date() + ": 客户端登录失败，原因：" + loginResponsePacket.getReason());
+                log.info( "客户端登录失败，原因：" + loginResponsePacket.getReason());
             }
         } else if (packet instanceof MessageResponsePacket) {
             MessageResponsePacket messageResponsePacket = (MessageResponsePacket) packet;
-            System.out.println(new Date() + ": 收到服务端的消息: " + messageResponsePacket.getMessage());
+            log.info( "收到服务端的消息: " + messageResponsePacket.getMessage());
         }
     }
 }

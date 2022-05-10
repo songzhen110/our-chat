@@ -2,12 +2,14 @@ package com.howcool.protocol;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /***
  * 抽象定义客户端与服务端通信的基本 Java 对象
  *  包含 版本号、指令
  */
 @Data
-public abstract class Packet {
+public abstract class Packet implements Serializable {
     /**
      * 协议版本号(1byte)
      */

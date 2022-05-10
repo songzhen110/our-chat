@@ -1,10 +1,13 @@
 package com.howcool.serialize;
 
+import com.howcool.serialize.impl.JDKSerializer;
 import com.howcool.serialize.impl.JSONSerializer;
 
 public interface Serializer {
 
-    Serializer DEFAULT = new JSONSerializer();
+    Serializer DEFAULT_SERIALIZER = new JDKSerializer();
+
+    Serializer JSON_SERIALIZER = new JSONSerializer();
 
     /**
      * 序列化算法

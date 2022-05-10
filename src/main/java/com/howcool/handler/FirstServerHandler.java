@@ -1,4 +1,4 @@
-package com.howcool.server;
+package com.howcool.handler;
 
 import com.howcool.protocol.Packet;
 import com.howcool.protocol.PacketCodeC;
@@ -6,14 +6,35 @@ import com.howcool.protocol.request.LoginRequestPacket;
 import com.howcool.protocol.request.MessageRequestPacket;
 import com.howcool.protocol.response.LoginResponsePacket;
 import com.howcool.protocol.response.MessageResponsePacket;
+import com.howcool.util.LoginUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
 import java.util.Date;
 
+@Slf4j
 public class FirstServerHandler extends ChannelInboundHandlerAdapter {
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        super.handlerAdded(ctx);
+        log.info("handlerAdded(ChannelHandlerContext ctx)");
+    }
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        log.info("channelRegistered(ChannelHandlerContext ctx)");
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        log.info("channelActive(ChannelHandlerContext ctx)");
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -29,6 +50,7 @@ public class FirstServerHandler extends ChannelInboundHandlerAdapter {
             loginResponsePacket.setVersion(packet.getVersion());
             // 登录校验
             if (valid(loginRequestPacket)) {
+                LoginUtil.markAsLogin(ctx.channel());
                 // 校验成功
                 loginResponsePacket.setSuccess(true);
             } else {
@@ -37,18 +59,31 @@ public class FirstServerHandler extends ChannelInboundHandlerAdapter {
                 loginResponsePacket.setReason("账号密码校验失败");
             }
 
-            ByteBuf resByteBuf =PacketCodeC.INSTANCE.encodeOld(loginResponsePacket);
+            ByteBuf resByteBuf = PacketCodeC.INSTANCE.encodeOld(loginResponsePacket);
             ctx.channel().writeAndFlush(resByteBuf);
         } else if (packet instanceof MessageRequestPacket) {
             // 处理消息
             MessageRequestPacket messageRequestPacket = ((MessageRequestPacket) packet);
-            System.out.println(new Date() + ": 收到客户端消息: " + messageRequestPacket.getMessage());
+            log.info(": 收到客户端消息: " + messageRequestPacket.getMessage());
 
             MessageResponsePacket messageResponsePacket = new MessageResponsePacket();
             messageResponsePacket.setMessage("服务端回复【" + messageRequestPacket.getMessage() + "】");
             ByteBuf responseByteBuf = PacketCodeC.INSTANCE.encodeOld(messageResponsePacket);
             ctx.channel().writeAndFlush(responseByteBuf);
         }
+
+        log.info("channelRead(ChannelHandlerContext ctx)");
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        super.channelReadComplete(ctx);
+        log.info("channelReadComplete(ChannelHandlerContext ctx)");
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error(cause.getMessage());
     }
 
     private boolean valid(LoginRequestPacket loginRequestPacket) {
